@@ -14,10 +14,7 @@ class AdvancedAIPlayer:
         self.difficulty = difficulty  
         self.set_difficulty(difficulty)
         self.nodes_evaluated = 0
-        self.transposition_table = OrderedDict()
-        self.search_cancelled = False
-        self.lock = threading.Lock()
-        self.killer_moves = {}  
+          
 
         self.nodes_evaluated = 0
         self.last_search_time = 0.0
@@ -447,5 +444,6 @@ class AdvancedAIPlayer:
             if len(self.transposition_table) >= MAX_CACHE_SIZE:
                 self.transposition_table.popitem(last=False)
             self.transposition_table[key] = value
+
 
 

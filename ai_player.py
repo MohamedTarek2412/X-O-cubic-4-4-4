@@ -13,7 +13,6 @@ class AdvancedAIPlayer:
         self.opponent_symbol = PLAYER_O if player_symbol == PLAYER_X else PLAYER_X
         self.difficulty = difficulty  
         self.set_difficulty(difficulty)
-        self.nodes_evaluated = 0
           
 
         self.nodes_evaluated = 0
@@ -444,6 +443,7 @@ class AdvancedAIPlayer:
             if len(self.transposition_table) >= MAX_CACHE_SIZE:
                 self.transposition_table.popitem(last=False)
             self.transposition_table[key] = value
+
 
 
 

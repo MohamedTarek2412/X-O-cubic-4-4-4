@@ -1,4 +1,3 @@
-# game.py
 from constants import *
 import threading
 import pickle
@@ -23,7 +22,6 @@ class CubicGame:
             self.move_history = []
 
     def make_move(self, x, y, z):
-        """صنع حركة مع تتبع التاريخ"""
         with self.lock:
             if self.board[x][y][z] is not EMPTY or self.game_over:
                 return False
@@ -32,7 +30,6 @@ class CubicGame:
             self.move_history.append((x, y, z, self.current_player))
             self.move_count += 1
             
-            # فحص الفوز بكفاءة
             if self.check_win_optimized(x, y, z, self.current_player):
                 self.game_over = True
                 self.winner = self.current_player
@@ -44,11 +41,9 @@ class CubicGame:
             return True
 
     def check_win_optimized(self, x, y, z, player):
-        """فحص الفوز بشكل محسن حول النقطة الأخيرة"""
         for dx, dy, dz in DIRECTIONS:
-            count = 1  # النقطة الحالية
+            count = 1  
             
-            # التحقق في الاتجاه الإيجابي
             for i in range(1, WINNING_LENGTH):
                 nx, ny, nz = x + i*dx, y + i*dy, z + i*dz
                 if not (0 <= nx < BOARD_SIZE and 0 <= ny < BOARD_SIZE and 0 <= nz < BOARD_SIZE):
@@ -57,7 +52,6 @@ class CubicGame:
                     break
                 count += 1
                 
-            # التحقق في الاتجاه المعاكس
             for i in range(1, WINNING_LENGTH):
                 nx, ny, nz = x - i*dx, y - i*dy, z - i*dz
                 if not (0 <= nx < BOARD_SIZE and 0 <= ny < BOARD_SIZE and 0 <= nz < BOARD_SIZE):
@@ -72,11 +66,9 @@ class CubicGame:
         return False
 
     def get_winning_line_optimized(self, x, y, z, player):
-        """الحصول على خط الفوز بشكل محسن"""
         for dx, dy, dz in DIRECTIONS:
             line = [(x, y, z)]
             
-            # في الاتجاه الإيجابي
             for i in range(1, WINNING_LENGTH):
                 nx, ny, nz = x + i*dx, y + i*dy, z + i*dz
                 if not (0 <= nx < BOARD_SIZE and 0 <= ny < BOARD_SIZE and 0 <= nz < BOARD_SIZE):
@@ -85,7 +77,6 @@ class CubicGame:
                     break
                 line.append((nx, ny, nz))
                 
-            # في الاتجاه المعاكس
             for i in range(1, WINNING_LENGTH):
                 nx, ny, nz = x - i*dx, y - i*dy, z - i*dz
                 if not (0 <= nx < BOARD_SIZE and 0 <= ny < BOARD_SIZE and 0 <= nz < BOARD_SIZE):
@@ -100,7 +91,6 @@ class CubicGame:
         return None
 
     def undo_move(self):
-        """تراجع عن الحركة الأخيرة"""
         with self.lock:
             if not self.move_history:
                 return False
@@ -111,46 +101,38 @@ class CubicGame:
             self.game_over = False
             self.winner = None
             self.winning_line = None
-            self.current_player = player  # العودة للاعب السابق
+            self.current_player = player  
             return True
 
     def switch_player(self):
-        """تبديل اللاعب"""
         with self.lock:
             self.current_player = PLAYER_O if self.current_player == PLAYER_X else PLAYER_X
 
     def is_full(self):
-        """فحص إذا كانت اللوحة ممتلئة"""
         return self.move_count == BOARD_SIZE ** 3
 
     def get_possible_moves(self):
-        """الحصول على جميع الحركات الممكنة مرتبة استراتيجياً"""
         moves = []
         for x in range(BOARD_SIZE):
             for y in range(BOARD_SIZE):
                 for z in range(BOARD_SIZE):
                     if self.board[x][y][z] is EMPTY:
-                        # حساب الوزن الاستراتيجي
                         weight = (POSITION_WEIGHTS[x][y] + 
                                  POSITION_WEIGHTS[z][x] + 
                                  POSITION_WEIGHTS[y][z])
                         
-                        # مكافأة المركز
                         if (x, y, z) in CENTER_POSITIONS:
                             weight += 2
                             
-                        # مكافأة الزوايا
                         if (x, y, z) in CORNER_POSITIONS:
                             weight += 1
                             
                         moves.append((weight, (x, y, z)))
         
-        # ترتيب حسب الوزن (الأعلى أولاً)
         moves.sort(reverse=True, key=lambda x: x[0])
         return [move for _, move in moves]
 
     def copy(self):
-        """إنشاء نسخة من حالة اللعبة"""
         new_game = CubicGame()
         new_game.board = [[[self.board[x][y][z] for z in range(BOARD_SIZE)] 
                          for y in range(BOARD_SIZE)] 
@@ -164,7 +146,6 @@ class CubicGame:
         return new_game
 
     def save_game(self, filename):
-        """حفظ اللعبة الحالية"""
         with open(filename, 'wb') as f:
             pickle.dump({
                 'board': self.board,
@@ -173,7 +154,6 @@ class CubicGame:
             }, f)
 
     def load_game(self, filename):
-        """تحميل لعبة محفوظة"""
         if os.path.exists(filename):
             with open(filename, 'rb') as f:
                 data = pickle.load(f)
@@ -181,13 +161,11 @@ class CubicGame:
                 self.current_player = data['current_player']
                 self.move_history = data['move_history']
                 self.move_count = len(self.move_history)
-                # إعادة حساب حالة اللعبة
                 self.game_over = False
                 self.winner = None
                 self.winning_line = None
 
     def get_game_state(self):
-        """الحصول على حالة اللعبة كسلسلة للتخزين المؤقت"""
         state_parts = []
         for x in range(BOARD_SIZE):
             for y in range(BOARD_SIZE):
